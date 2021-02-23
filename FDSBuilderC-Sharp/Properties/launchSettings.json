@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FDSBuilderC-Sharp": {
+      "commandName": "Project",
+      "commandLineArgs": "--inputRom \"Z:\\SD_USB\\FUN\\CODE_Private\\aaa_Cypro Projects\\Cypro Ace Project Idol Hotline - Nakayama Miho\\test proj\\Idol Hotline - Nakayama Miho no Tokimeki High School (Trans).fds\" --extract \"Z:\\SD_USB\\FUN\\CODE_Private\\aaa_Cypro Projects\\Cypro Ace Project Idol Hotline - Nakayama Miho\\test proj\""
+    }
+  }
+}
