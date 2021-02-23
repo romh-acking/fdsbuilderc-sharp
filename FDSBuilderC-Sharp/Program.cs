@@ -66,6 +66,16 @@ namespace FDSBuilderC_Sharp
 
             Global.ROM = File.ReadAllBytes(inputRomPath);
 
+            //Check is header exists and remove it if it does
+            byte[] headerCheck = new byte[3];
+            Array.Copy(Global.ROM, 0, headerCheck, 0, headerCheck.Length);
+            if (Encoding.ASCII.GetString(headerCheck) == "FDS")
+            {
+                byte[] unhearedRom = new byte[Global.ROM.Length - Constants.HEADERSIZE];
+                Array.Copy(Global.ROM, Constants.HEADERSIZE, unhearedRom, 0, unhearedRom.Length);
+                Global.ROM = unhearedRom;
+            }
+
             Global.diskSideCount = Global.ROM.Length / Constants.DISKSIDESIZE;
             if (Global.ROM.Length % Constants.DISKSIDESIZE != 0)
             {
