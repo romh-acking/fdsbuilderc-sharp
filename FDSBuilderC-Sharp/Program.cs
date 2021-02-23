@@ -142,8 +142,6 @@ namespace FDSBuilderC_Sharp
 
         private static void WriteFDSROM(string path, List<FileHeader>[] header, List<byte[]>[] fileBody, string outputRomPath, string extractPath)
         {
-            //ushort[][] fileCRC16 = new ushort[Global.diskSideCount][];
-
             if (fileBody == null)
             {
                 //load filebody data
@@ -164,7 +162,6 @@ namespace FDSBuilderC_Sharp
                     {
                         byte[] fileByte = File.ReadAllBytes(file.FullName);
                         fileBody[i].Add(fileByte);
-                        //fileCRC16[i][j] = CalculateCRC16(fileByte);
                         j++;
                     }
                 }
@@ -176,16 +173,6 @@ namespace FDSBuilderC_Sharp
                 //Deserialize header info
                 string json = Encoding.ASCII.GetString(File.ReadAllBytes(extractPath));
                 header = JsonConvert.DeserializeObject<List<FileHeader>[]>(json);
-
-                /*for (int i = 0; i < Global.diskSideCount; i++)
-                {
-                    int j = 0;
-                    foreach(FileHeader h in header[i])
-                    {
-                        h.CRC = fileCRC16[i][j];
-                        j++;
-                    }
-                }*/
             }
 
             //Write header and file info to rom
@@ -251,31 +238,5 @@ namespace FDSBuilderC_Sharp
         }
 
         private static string getDiskSideChar(int sideNo) => new string(new char[] { (char)(Convert.ToUInt16('a') + sideNo) });
-
-        //Source: http://forums.nesdev.com/viewtopic.php?t=15895
-        public static ushort CalculateCRC16(byte[] data)
-        {
-            //Do not include any existing checksum, not even the blank checksums 00 00 or FF FF.
-            //The formula will automatically count 2 0x00 bytes without the programmer adding them manually.
-            //Also, do not include the gap terminator (0x80) in the data.
-            //If you wish to do so, change sum to 0x0000.
-            int sum = 0x8000;
-
-            for (int byte_index = 0; byte_index < data.Length + 2; byte_index++)
-            {
-                int b = byte_index < data.Length ? data[byte_index] : 0x00;
-                for (int bit_index = 0; bit_index < 8; bit_index++)
-                {
-                    int bit = ((b >> bit_index) & 1);
-                    int carry = sum & 1;
-                    sum = (sum >> 1) | (bit << 15);
-                    if (carry == 1)
-                    {
-                        sum ^= 0x8408;
-                    }
-                }
-            }
-            return (ushort)sum;
-        }
     }
 }

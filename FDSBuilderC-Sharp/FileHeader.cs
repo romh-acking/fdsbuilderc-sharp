@@ -57,9 +57,6 @@ public class FileHeader
             fileSize = BitConverter.ToUInt16(b, 0);
 
             fileType = fileHeaderStream[(int)fileHeaderEnum.fileType];
-
-            //Array.Copy(fileHeaderStream, (int)fileHeaderEnum.CRC, b, 0, b.Length);
-            //CRC = BitConverter.ToUInt16(b, 0);
         }
     }
 
@@ -81,9 +78,6 @@ public class FileHeader
         Array.Copy(bytes, 0, b, (int)fileHeaderEnum.fileSize, bytes.Length);
 
         b[(int)fileHeaderEnum.fileType] = fileType;
-
-        //bytes = BitConverter.GetBytes(CRC);
-        //Array.Copy(bytes,0, b, (int)fileHeaderEnum.CRC, bytes.Length);
 
         b[(int)fileHeaderEnum.CRC] = 0x4;
 
