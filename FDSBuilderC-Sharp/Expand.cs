@@ -1,5 +1,5 @@
 ﻿public struct Expand
 {
-    public int fileNumber { get; set; }
-    public int bytesToAdd { get; set; }
+    public int FileNumber { get; set; }
+    public int BytesToAdd { get; set; }
 }

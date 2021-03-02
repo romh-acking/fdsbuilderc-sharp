@@ -2,15 +2,15 @@
 using System.Linq;
 using System.Text;
 
-enum fileHeaderEnum
+enum FileHeaderEnum
 {
-    firstByte = 0x0,
-    fileNumber = 0x1,
-    fileID = 0x2,
-    fileName = 0x3,
-    fileAddress = 0xb,
-    fileSize = 0xd,
-    fileType = 0xf,
+    FirstByte = 0x0,
+    FileNumber = 0x1,
+    FileID = 0x2,
+    FileName = 0x3,
+    FileAddress = 0xb,
+    FileSize = 0xd,
+    FileType = 0xf,
     CRC = 0x10
 }
 
@@ -18,45 +18,45 @@ public class FileHeader
 {
     private const byte FILEHEADER = 0x3;
 
-    public byte fileNumber { get; private set; }
-    public byte fileID { get; private set; }
-    public string fileName { get; private set; }
-    public ushort fileAddress { get; private set; }
-    public ushort fileSize { get; set; }
-    public byte fileType { get; private set; }
+    public byte FileNumber { get; private set; }
+    public byte FileID { get; private set; }
+    public string FileName { get; private set; }
+    public ushort FileAddress { get; private set; }
+    public ushort FileSize { get; set; }
+    public byte FileType { get; private set; }
 
     public int PCAddressStart;
 
-    public void ReadHeader(int startAddress, out bool notFileHeader)
+    public void ReadHeader(int StartAddress, out bool NotFileHeader)
     {
-        byte[] fileHeaderStream = new byte[Constants.FILEHEADERSIZE];
-        Array.Copy(Global.ROM, startAddress, fileHeaderStream, 0, fileHeaderStream.Length);
-        PCAddressStart = startAddress;
+        byte[] FileHeaderStream = new byte[Constants.FILEHEADERSIZE];
+        Array.Copy(Global.ROM, StartAddress, FileHeaderStream, 0, FileHeaderStream.Length);
+        PCAddressStart = StartAddress;
 
-        notFileHeader = fileHeaderStream.All(x => x == 0);
+        NotFileHeader = FileHeaderStream.All(x => x == 0);
 
-        if (!notFileHeader)
+        if (!NotFileHeader)
         {
-            if (fileHeaderStream[(int)fileHeaderEnum.firstByte] != FILEHEADER)
+            if (FileHeaderStream[(int)FileHeaderEnum.FirstByte] != FILEHEADER)
             {
                 throw new Exception("File header wrong.");
             }
 
-            fileNumber = fileHeaderStream[(int)fileHeaderEnum.fileNumber];
-            fileID = fileHeaderStream[(int)fileHeaderEnum.fileID];
+            FileNumber = FileHeaderStream[(int)FileHeaderEnum.FileNumber];
+            FileID = FileHeaderStream[(int)FileHeaderEnum.FileID];
 
             byte[] b = new byte[8];
-            Array.Copy(fileHeaderStream, (int)fileHeaderEnum.fileName, b, 0, b.Length);
-            fileName = Encoding.ASCII.GetString(b);
+            Array.Copy(FileHeaderStream, (int)FileHeaderEnum.FileName, b, 0, b.Length);
+            FileName = Encoding.ASCII.GetString(b);
 
             b = new byte[2];
-            Array.Copy(fileHeaderStream, (int)fileHeaderEnum.fileAddress, b, 0, b.Length);
-            fileAddress = BitConverter.ToUInt16(b, 0);
+            Array.Copy(FileHeaderStream, (int)FileHeaderEnum.FileAddress, b, 0, b.Length);
+            FileAddress = BitConverter.ToUInt16(b, 0);
 
-            Array.Copy(fileHeaderStream, (int)fileHeaderEnum.fileSize, b, 0, b.Length);
-            fileSize = BitConverter.ToUInt16(b, 0);
+            Array.Copy(FileHeaderStream, (int)FileHeaderEnum.FileSize, b, 0, b.Length);
+            FileSize = BitConverter.ToUInt16(b, 0);
 
-            fileType = fileHeaderStream[(int)fileHeaderEnum.fileType];
+            FileType = FileHeaderStream[(int)FileHeaderEnum.FileType];
         }
     }
 
@@ -64,22 +64,22 @@ public class FileHeader
     {
         byte[] b = new byte[Constants.FILEHEADERSIZE];
 
-        b[(int)fileHeaderEnum.firstByte] = 0x3;
-        b[(int)fileHeaderEnum.fileNumber] = fileNumber;
-        b[(int)fileHeaderEnum.fileID] = fileID;
+        b[(int)FileHeaderEnum.FirstByte] = 0x3;
+        b[(int)FileHeaderEnum.FileNumber] = FileNumber;
+        b[(int)FileHeaderEnum.FileID] = FileID;
 
-        byte[] bytes = Encoding.ASCII.GetBytes(fileName);
-        Array.Copy(bytes, 0, b, (int)fileHeaderEnum.fileName,  bytes.Length);
+        byte[] Bytes = Encoding.ASCII.GetBytes(FileName);
+        Array.Copy(Bytes, 0, b, (int)FileHeaderEnum.FileName,  Bytes.Length);
 
-        bytes = BitConverter.GetBytes(fileAddress);
-        Array.Copy(bytes, 0, b, (int)fileHeaderEnum.fileAddress, bytes.Length);
+        Bytes = BitConverter.GetBytes(FileAddress);
+        Array.Copy(Bytes, 0, b, (int)FileHeaderEnum.FileAddress, Bytes.Length);
 
-        bytes = BitConverter.GetBytes(fileSize);
-        Array.Copy(bytes, 0, b, (int)fileHeaderEnum.fileSize, bytes.Length);
+        Bytes = BitConverter.GetBytes(FileSize);
+        Array.Copy(Bytes, 0, b, (int)FileHeaderEnum.FileSize, Bytes.Length);
 
-        b[(int)fileHeaderEnum.fileType] = fileType;
+        b[(int)FileHeaderEnum.FileType] = FileType;
 
-        b[(int)fileHeaderEnum.CRC] = 0x4;
+        b[(int)FileHeaderEnum.CRC] = 0x4;
 
         return b;
     }
