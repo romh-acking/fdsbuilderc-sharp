@@ -57,7 +57,7 @@ class Program
             })
             .WithNotParsed<Options>(o =>
             {
-                Console.WriteLine("FDSBuilder: C# Edition: A tool to extract files from an .FDS rom and merge files back into an FDS rom.");
+                Console.WriteLine("A tool to extract files from an .FDS rom and merge files back into an FDS rom.");
                 Console.WriteLine("Author: FCandChill");
                 System.Environment.Exit(1);
             });
