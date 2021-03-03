@@ -51,6 +51,7 @@ Programmed by FCandChill.
 
 ## Binary Info
 These are the bare essential files to make the program run. I don't know how or why "FDSBuilderC-Sharp.dll" is generated after compiling, but it would be best if there was a way to not generate it.
+
 * FDSBuilderC-Sharp.exe
 * FDSBuilderC-Sharp.dll
 * CommandLine.dll
