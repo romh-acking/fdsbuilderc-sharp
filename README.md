@@ -10,14 +10,17 @@ Programmed by FCandChill.
 
 ## Program Parameters
 
-* inputRom
-    * After this paramter, specific the path to the FDS disk image file.
+* inputDiskImage
+    * After this paramter, specify the filepath to the FDS disk image file.
+* outputDiskImage
+    * After this paramter, specify the filepath to the output FDS disk image file.
+	* Use this when using the "merge" or "expand" parameters.
 * extract
     * This parameter indicates you want to extract files from the FDS images.
-    * After this parameter, include the path to the directory you want your the FDS files to be outputted to. Each side will have its own dedicated directory.
-    * The program will also output a "fileInfo.json" file. 
 * merge
-    * Run this after you extract all the files.
+    * Specifies you want to create an FDS disk image from the previously extracted FDS files.
+* extractDirectory
+    * Directory where extracted FDS files (each side will have its own dedicated directory) and JSON settings file ("fileInfo.json" ) are.
 * expand
     * This parameter indicates you want to expand the files of your FDS  disk image file.
     * After this parameter, include the path to the file with the information to expand your file. Here's a sample of one:
@@ -48,6 +51,69 @@ Programmed by FCandChill.
 ```
 * outputRom
     * Include the path to the file you want to write your new FDS disk image to.
+
+## Example scripts
+Put these in a .bat file.
+
+###Extraction example
+Extract FDS files from a FDS disk image.
+```
+::Disk Image
+set baseImage=roms\diskImage.fds
+
+::Folders
+set projectFolder=C:\Project Folder
+set FDSBuilderFolder=C:\FDS Builder Folder
+
+cd "%projectFolder%"
+
+:: FDS Builder
+"%FDSBuilderFolder%\FDSBuilderC-Sharp.exe" ^
+--inputDiskImage "%projectFolder%\%baseImage%" ^
+--extract
+--extractDirectory "%projectFolder%\disks\original"
+```
+
+###Merge example
+Merge FDS disk images files after you extracted them:
+
+```
+::Roms
+set baseImage=roms\rom.fds
+set moddedImage=new.fds
+
+::Folders
+set projectFolder=C:\Project Folder
+set FDSBuilderFolder=C:\FDS Builder Folder
+
+cd "%projectFolder%"
+
+:: FDS Builder
+"%FDSBuilderFolder%\FDSBuilderC-Sharp.exe"
+--inputDiskImage "%projectFolder%\%baseImage%" ^
+--outputDiskImage "%projectFolder%\%moddedImage%" ^
+--merge ^
+--extractDirectory "%projectFolder%\disks\patched"
+```
+
+###Expand example
+```
+::Roms
+set baseImage=roms\rom.fds
+set moddedImage=new.fds
+
+::Folders
+set projectFolder=C:\Project Folder
+set FDSBuilderFolder=C:\FDS Builder Folder
+
+cd "%projectFolder%"
+
+::Expand FDS rom
+"%FDSBuilderFolder%\FDSBuilderC-Sharp.exe" ^
+--inputDiskImage "%projectFolder%\%baseImage%" ^
+--outputDiskImage "%projectFolder%\%moddedImage%" ^
+--expand "%projectFolder%\expansion.json"
+```
 
 ## References
 * https://wiki.nesdev.com/w/index.php/FDS_disk_format

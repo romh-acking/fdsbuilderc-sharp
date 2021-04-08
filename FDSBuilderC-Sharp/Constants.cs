@@ -1,4 +1,4 @@
-﻿class Constants
+﻿public class Constants
 {
     public const int FILEHEADERSIZE = 0x11;
     public const int DISKSIDESIZE = 0xFFDC;

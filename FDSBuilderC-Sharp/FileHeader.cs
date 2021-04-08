@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-enum FileHeaderEnum
+public enum FileHeaderEnum
 {
     FirstByte = 0x0,
     FileNumber = 0x1,
@@ -18,19 +18,19 @@ public class FileHeader
 {
     private const byte FILEHEADER = 0x3;
 
-    public byte FileNumber { get; private set; }
-    public byte FileID { get; private set; }
-    public string FileName { get; private set; }
-    public ushort FileAddress { get; private set; }
+    public byte FileNumber { get; set; }
+    public byte FileID { get; set; }
+    public string FileName { get; set; }
+    public ushort FileAddress { get; set; }
     public ushort FileSize { get; set; }
-    public byte FileType { get; private set; }
+    public byte FileType { get; set; }
 
     public int PCAddressStart;
 
     public void ReadHeader(int StartAddress, out bool NotFileHeader)
     {
         byte[] FileHeaderStream = new byte[Constants.FILEHEADERSIZE];
-        Array.Copy(Global.ROM, StartAddress, FileHeaderStream, 0, FileHeaderStream.Length);
+        Array.Copy(Global.FDSDiskImage, StartAddress, FileHeaderStream, 0, FileHeaderStream.Length);
         PCAddressStart = StartAddress;
 
         NotFileHeader = FileHeaderStream.All(x => x == 0);

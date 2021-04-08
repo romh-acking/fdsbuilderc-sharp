@@ -1,5 +1,5 @@
-﻿static class Global
+﻿public static class Global
 {
-    public static byte[] ROM;
+    public static byte[] FDSDiskImage;
     public static int DiskSideCount;
 }

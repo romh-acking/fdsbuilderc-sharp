@@ -362,3 +362,10 @@ MigrationBackup/
 FodyWeavers.xsd
 
 Properties/
+
+
+
+
+
+*.db
+*.db:encryptable

@@ -6,34 +6,26 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-class Program
+public class Program
 {
-    public class Options
+    // Path to rom used to extract files
+    // Also used to extract FDS header info when creating a new FDS rom
+    public static string InputDiskImagePath = "";
+
+    // Path to the output FDS disk image
+    // Used when using the "merge" parameter
+    public static string OutputDiskImagePath = "";
+
+    // 
+    public static string ExtractPath = "";
+
+    //
+    public static string ExpandPath = "";
+    public static string MergePath = "";
+
+
+    public static void Main(string[] args)
     {
-        [Option('i', "inputRom", Required = true, HelpText = "Path to input FDS rom (requires rom path for input)")]
-        public string InputRomPath { get; set; }
-
-        [Option('e', "extract", Required = false, HelpText = "Extract  (requires file info settings path for output)")]
-        public string Extract { get; set; }
-
-        [Option('m', "merge", Required = false, HelpText = "Merge")]
-        public bool Merge { get; set; }
-
-        [Option('x', "expand", Required = false, HelpText = "Expand (requires directory path to output to)")]
-        public string Expand { get; set; }
-
-        [Option('o', "outputRom", Required = false, HelpText = "Path to output FDS rom (requires rom path for output)")]
-        public string OutputRomPath { get; set; }
-    }
-
-    static void Main(string[] args)
-    {
-        string InputRomPath = "";
-        string OutputRomPath = "";
-
-        string ExtractPath = "";
-        string ExpandPath = "";
-
         bool Merge = false;
         bool Extract = false;
         bool Expand = false;
@@ -41,19 +33,15 @@ class Program
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
             {
-                InputRomPath = o.InputRomPath;
-                OutputRomPath = o.OutputRomPath;
-                Merge = o.Merge;
-                ExtractPath = o.Extract;
+                InputDiskImagePath = o.InputRomPath;
+                OutputDiskImagePath = o.OutputRomPath;
+                MergePath = o.Merge;
+                Extract = o.Extract;
+                ExtractPath = o.ExtractDirectory;
                 ExpandPath = o.Expand;
 
-                Extract = o.Extract != "" && o.Extract != null;
-                Expand = o.Expand != "" && o.Expand != null;
-
-                if (Expand)
-                {
-                    Merge = Extract = true;
-                }
+                Expand = !string.IsNullOrEmpty(o.Expand);
+                Merge = !string.IsNullOrEmpty(o.Merge);
             })
             .WithNotParsed<Options>(o =>
             {
@@ -62,64 +50,129 @@ class Program
                 System.Environment.Exit(1);
             });
 
-        Global.ROM = File.ReadAllBytes(InputRomPath);
+        // Parameter legitimacy checks
 
-        //Check is header exists and remove it if it does
+        if ((Merge || Expand) && string.IsNullOrEmpty(OutputDiskImagePath))
+        {
+            Console.WriteLine("Merge and expand parameters require an output diskimage filepath");
+            System.Environment.Exit(1);
+        }
+
+        if (Extract && string.IsNullOrEmpty(OutputDiskImagePath))
+        {
+            Console.WriteLine("Extract parameter doesn't require an output diskimage filepath");
+            System.Environment.Exit(1);
+        }
+
+        if (Merge && !(Directory.Exists(Path.GetDirectoryName(OutputDiskImagePath))))
+        {
+            Console.WriteLine("Output diskimage filepath is not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Merge && !(Directory.Exists(Path.GetDirectoryName(ExtractPath)) && Directory.Exists(Path.Combine(ExtractPath, "a")) && Directory.Exists(Path.Combine(ExtractPath, "b"))))
+        {
+            Console.WriteLine("Extract directory paths are not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Extract && !Directory.Exists(ExtractPath))
+        {
+            Console.WriteLine("Output extraction directory is not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Expand && !File.Exists(ExpandPath))
+        {
+            Console.WriteLine("Expansion directory is not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Expand && Path.GetExtension(ExpandPath) != ".json")
+        {
+            Console.WriteLine("Expansion directory is not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Extract && !(Directory.Exists(ExtractPath) && Directory.Exists(Path.Combine(ExtractPath, "a")) && Directory.Exists(Path.Combine(ExtractPath, "b"))))
+        {
+            Console.WriteLine("Expansion directory is not valid.");
+            System.Environment.Exit(1);
+        }
+
+        if (Expand)
+        {
+            Merge = Extract = true;
+        }
+
+        // Load FDS disk image
+        Global.FDSDiskImage = File.ReadAllBytes(InputDiskImagePath);
+
+        //Check if header exists and remove it if it does
         byte[] HeaderCheck = new byte[3];
-        Array.Copy(Global.ROM, 0, HeaderCheck, 0, HeaderCheck.Length);
+        Array.Copy(Global.FDSDiskImage, 0, HeaderCheck, 0, HeaderCheck.Length);
         if (Encoding.ASCII.GetString(HeaderCheck) == "FDS")
         {
-            byte[] UnhearedRom = new byte[Global.ROM.Length - Constants.HEADERSIZE];
-            Array.Copy(Global.ROM, Constants.HEADERSIZE, UnhearedRom, 0, UnhearedRom.Length);
-            Global.ROM = UnhearedRom;
+            byte[] UnhearedRom = new byte[Global.FDSDiskImage.Length - Constants.HEADERSIZE];
+            Array.Copy(Global.FDSDiskImage, Constants.HEADERSIZE, UnhearedRom, 0, UnhearedRom.Length);
+            Global.FDSDiskImage = UnhearedRom;
         }
 
-        Global.DiskSideCount = Global.ROM.Length / Constants.DISKSIDESIZE;
-        if (Global.ROM.Length % Constants.DISKSIDESIZE != 0)
+        // Get disk side count from filesize
+        Global.DiskSideCount = Global.FDSDiskImage.Length / Constants.DISKSIDESIZE;
+        if (Global.FDSDiskImage.Length % Constants.DISKSIDESIZE != 0)
         {
-            throw new ArgumentException("Rom size wrong.");
+            throw new ArgumentException("Disk image size wrong.");
         }
 
-        List<FileHeader>[] Header = null;
+        List<FileHeader>[] FileHeaders = null;
+        List<byte[]>[] FileBodies = null;
         List<Expand>[] ExpansionSettings = null;
-        List<byte[]>[] FileBody = null;
 
+        // Extract files from FDS diskimage
         if (Extract)
         {
-            ReadFDSRom(out Header, out FileBody);
+            ReadFDSFiles(out FileHeaders, out FileBodies);
 
+            // If we're not expanding, write the files to the filesystem.
+            // If we are expanding, don't. When expanding, the diskimage,
+            // the output will be an expanded rom.
             if (!Expand)
             {
-                string Json = JsonConvert.SerializeObject(Header, Formatting.Indented);
+                string Json = JsonConvert.SerializeObject(FileHeaders, Formatting.Indented);
                 File.WriteAllText(Path.Combine(ExtractPath, Constants.FILEINFOFILENAME), Json);
 
-                for (int i = 0; i < FileBody.Length; i++)
+                for (int i = 0; i < FileBodies.Length; i++)
                 {
                     string DiskSideChar = GetDiskSideChar(i);
 
                     Directory.CreateDirectory(Path.Combine(ExtractPath, DiskSideChar));
 
                     int j = 0;
-                    foreach (byte[] FileData in FileBody[i])
+                    foreach (byte[] FileData in FileBodies[i])
                     {
-                        File.WriteAllBytes(Path.Combine(Path.Combine(ExtractPath, DiskSideChar), $"{j:00}.dk{DiskSideChar}"), FileBody[i][j]);
+                        File.WriteAllBytes(Path.Combine(Path.Combine(ExtractPath, DiskSideChar), $"{j:00}.dk{DiskSideChar}"), FileBodies[i][j]);
                         j++;
                     }
                 }
             }
         }
 
+        // Append specified amount of zeros to the filebodies
+        // The ExpansionSettings json file specifies which files to expand and by how much.
+        // When this flag is enabled, the Write and merge flag are also enabled
         if (Expand)
         {
             string Json = Encoding.ASCII.GetString(File.ReadAllBytes(ExpandPath));
             ExpansionSettings = JsonConvert.DeserializeObject<List<Expand>[]>(Json);
 
-            ExpandFiles(ExpansionSettings, ref Header, ref FileBody);
+            ExpandFiles(ExpansionSettings, ref FileHeaders, ref FileBodies);
         }
 
+        // Merge the files into a working FDS disk image
         if (Merge)
         {
-            WriteFDSROM(InputRomPath, Header, FileBody, OutputRomPath, ExtractPath);
+            WriteFDSROM(InputDiskImagePath, FileHeaders, FileBodies);
         }
     }
 
@@ -138,9 +191,11 @@ class Program
         }
     }
 
-    private static void WriteFDSROM(string Path, List<FileHeader>[] Header, List<byte[]>[] FileBody, string OutputRomPath, string ExtractPath)
+    private static void WriteFDSROM(string RomPath, List<FileHeader>[] Header, List<byte[]>[] FileBody)
     {
-        if (FileBody == null)
+        // If MergePath exists, then FileBody is empty.
+        // Therefore, we must read the FDS files from the hard drive before generating an FDS rom.
+        if (!string.IsNullOrEmpty(MergePath))
         {
             //load filebody data
             FileBody = new List<byte[]>[Global.DiskSideCount];
@@ -149,7 +204,7 @@ class Program
                 FileBody[i] = new List<byte[]>();
                 string DiskSideChar = GetDiskSideChar(i);
 
-                DirectoryInfo d = new DirectoryInfo(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path), DiskSideChar));
+                DirectoryInfo d = new DirectoryInfo(System.IO.Path.Combine(MergePath, DiskSideChar));
                 FileInfo[] files = d.GetFiles($"*.dk{ GetDiskSideChar(i)}");
                 Array.Sort(files, (x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name));
 
@@ -167,12 +222,12 @@ class Program
         {
             Header = new List<FileHeader>[Global.DiskSideCount];
             //Deserialize header info
-            string Json = Encoding.ASCII.GetString(File.ReadAllBytes(ExtractPath));
+            string SettingsFilePath = Path.Combine(ExtractPath, "fileInfo.json");
+            string Json = Encoding.ASCII.GetString(File.ReadAllBytes(SettingsFilePath));
             Header = JsonConvert.DeserializeObject<List<FileHeader>[]>(Json);
         }
 
         //Write header and file info to rom
-
         byte[] emptySpace = new byte[Constants.DISKSIDESIZE - Constants.DISKHEADERSIZE];
 
         for (int i = 0; i < Global.DiskSideCount; i++)
@@ -180,33 +235,47 @@ class Program
             int pc = Constants.DISKHEADERSIZE + Constants.DISKSIDESIZE * i;
 
             //Blank out the enrtire disk side, except for header info
-            Array.Copy(emptySpace, 0, Global.ROM, pc, emptySpace.Length);
+            Array.Copy(emptySpace, 0, Global.FDSDiskImage, pc, emptySpace.Length);
 
             int j = 0;
             foreach (FileHeader h in Header[i])
             {
                 byte[] headerBytes = h.GenerateHeader();
-                Array.Copy(headerBytes, 0, Global.ROM, pc, headerBytes.Length);
+                Array.Copy(headerBytes, 0, Global.FDSDiskImage, pc, headerBytes.Length);
                 pc += headerBytes.Length;
 
                 byte[] fileBodyBytes = FileBody[i][j];
-                Array.Copy(fileBodyBytes, 0, Global.ROM, pc, fileBodyBytes.Length);
+
+                if (Constants.DISKSIDESIZE < fileBodyBytes.Length)
+                {
+                    throw new Exception($"File size for '{h.FileName}.{h.FileType}' is too big for an FDS disk image side.");
+                }
+
+                if (Global.FDSDiskImage.Length < fileBodyBytes.Length + pc)
+                {
+                    throw new Exception($"File size for '{h.FileName}.{h.FileType}' is too big for an FDS disk image.");
+                }
+
+                Array.Copy(fileBodyBytes, 0, Global.FDSDiskImage, pc, fileBodyBytes.Length);
                 pc += fileBodyBytes.Length;
                 j++;
             }
         }
 
-        File.WriteAllBytes(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path), OutputRomPath), Global.ROM);
+        File.WriteAllBytes(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(RomPath), OutputDiskImagePath), Global.FDSDiskImage);
     }
 
-    private static void ReadFDSRom(out List<FileHeader>[] Header, out List<byte[]>[] FileBody)
+    private static void ReadFDSFiles(out List<FileHeader>[] FileHeader, out List<byte[]>[] FileBody)
     {
-        Header = new List<FileHeader>[Global.DiskSideCount];
+        // Stores the file header info for each file on the diskimage
+        FileHeader = new List<FileHeader>[Global.DiskSideCount];
+
+        // Stores the actual file data
         FileBody = new List<byte[]>[Global.DiskSideCount];
 
         for (int i = 0; i < Global.DiskSideCount; i++)
         {
-            Header[i] = new List<FileHeader>();
+            FileHeader[i] = new List<FileHeader>();
             FileBody[i] = new List<byte[]>();
             int pc = Constants.DISKHEADERSIZE + Constants.DISKSIDESIZE * i;
 
@@ -218,12 +287,12 @@ class Program
 
                 if (!NotFileHeader)
                 {
-                    Header[i].Add(h);
+                    FileHeader[i].Add(h);
                     pc += Constants.FILEHEADERSIZE + h.FileSize;
 
                     //Read filebody
                     byte[] fileBodyData = new byte[h.FileSize];
-                    Array.Copy(Global.ROM, h.PCAddressStart + Constants.FILEHEADERSIZE, fileBodyData, 0, fileBodyData.Length);
+                    Array.Copy(Global.FDSDiskImage, h.PCAddressStart + Constants.FILEHEADERSIZE, fileBodyData, 0, fileBodyData.Length);
                     FileBody[i].Add(fileBodyData);
                 }
             }
