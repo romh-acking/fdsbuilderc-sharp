@@ -9,8 +9,6 @@ This program is an open source option / replacement to "[FDS Expander](https://w
 Programmed by FCandChill.
 
 ## Program Parameters
-
-<<<<<<< HEAD
 * inputDiskImage
     * After this paramter, specify the filepath to the FDS disk image file.
 * outputDiskImage
@@ -18,14 +16,6 @@ Programmed by FCandChill.
 	* Use this when using the "merge" or "expand" parameters.
 * extract
     * This parameter indicates you want to extract files from the FDS images.
-=======
-* inputRom
-    * After this paramter, specify the path to the FDS disk image file.
-* extract
-    * This parameter indicates you want to extract files from the FDS disk image.
-    * After this parameter, include the path to the directory you want your FDS files to be outputted to. Each side will have its own dedicated directory.
-    * The program will also output a "fileInfo.json" file, which contains file header info.
->>>>>>> b6f43e63031be0e8c60e89f05e6bbcae7e69aed9
 * merge
     * Specifies you want to create an FDS disk image from the previously extracted FDS files.
 * extractDirectory
@@ -61,7 +51,6 @@ Programmed by FCandChill.
 * outputRom
     * Include the path to the file you want to write your new FDS disk image to.
 
-<<<<<<< HEAD
 ## Example scripts
 Put these in a .bat file.
 
@@ -124,7 +113,7 @@ cd "%projectFolder%"
 --outputDiskImage "%projectFolder%\%moddedImage%" ^
 --expand "%projectFolder%\expansion.json"
 ```
-=======
+
 ## Binary Info
 These are the bare essential files to make the program run. I don't know how or why "FDSBuilderC-Sharp.dll" is generated after compiling, but it would be best if there was a way to not generate it.
 
@@ -133,7 +122,6 @@ These are the bare essential files to make the program run. I don't know how or 
 * CommandLine.dll
 * Newtonsoft.Json.dll
 * FDSBuilderC-Sharp.runtimeconfig.json
->>>>>>> b6f43e63031be0e8c60e89f05e6bbcae7e69aed9
 
 ## References
 * https://wiki.nesdev.com/w/index.php/FDS_disk_format
