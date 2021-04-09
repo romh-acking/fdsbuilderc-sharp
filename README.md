@@ -69,7 +69,7 @@ cd "%projectFolder%"
 :: FDS Builder
 "%FDSBuilderFolder%\FDSBuilderC-Sharp.exe" ^
 --inputDiskImage "%projectFolder%\%baseImage%" ^
---extract
+--extract ^
 --extractDirectory "%projectFolder%\disks\original"
 ```
 
