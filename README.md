@@ -9,19 +9,8 @@ This program is an open source option / replacement to "[FDS Expander](https://w
 Programmed by FCandChill.
 
 ## Program Parameters
-* inputDiskImage
-    * After this paramter, specify the filepath to the FDS disk image file.
-* outputDiskImage
-    * After this paramter, specify the filepath to the output FDS disk image file.
-	* Use this when using the "merge" or "expand" parameters.
-* extract
-    * This parameter indicates you want to extract files from the FDS images.
-* merge
-    * Specifies you want to create an FDS disk image from the previously extracted FDS files.
-* extractDirectory
-    * Directory where extracted FDS files (each side will have its own dedicated directory) and JSON settings file ("fileInfo.json" ) are.
 * expand
-    * This parameter indicates you want to expand the files of your FDS  disk image file. The program simply adds X number of bytes to the end of your file.
+    * This parameter indicates you want to expand the files of your FDS disk image file. The program simply adds X number of bytes to the end of your file.
     * After this parameter, include the path to the file with the information to expand your file. Here's a sample of one:
   
 ```
@@ -48,8 +37,8 @@ Programmed by FCandChill.
   ]
 ]
 ```
-* outputRom
-    * Include the path to the file you want to write your new FDS disk image to.
+
+See the program's help output for more details.
 
 ## Example scripts
 Put these in a .bat file.
