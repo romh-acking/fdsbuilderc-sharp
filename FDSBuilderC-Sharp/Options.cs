@@ -2,22 +2,25 @@
 
 public class Options
 {
-    [Option('i', "inputDiskImage", Required = true, HelpText = "Path to input FDS disk image (requires rom path for input)")]
-    public string InputRomPath { get; set; }
+    [Option('i', "inputDiskImage", Required = true, HelpText = "Path to input FDS disk image")]
+    public string InputDiskImagePath { get; set; }
     [Option('o', "outputDiskImage", Required = false, HelpText = "Path to output FDS disk image (requires rom path for input)")]
-    public string OutputRomPath { get; set; }
+    public string OutputDiskImage { get; set; }
 
     [Option('e', "extract", Required = false, HelpText = "Extract")]
     public bool Extract { get; set; }
 
-    [Option('m', "merge", Required = false, HelpText = "Merge (requires directory path for the previously extracted FDS file")]
-    public string Merge { get; set; }
+    [Option('m', "merge", Required = false, HelpText = "Merge")]
+    public bool Merge { get; set; }
 
-    [Option('x', "expand", Required = false, HelpText = "Expand (requires directory path to output to)")]
-    public string Expand { get; set; }
+    [Option('x', "expand", Required = false, HelpText = "Expand")]
+    public bool Expand { get; set; }
 
-    [Option('e', "extractDirectory", Required = false, HelpText = "Location where extracted FDS files and JSON setting are.")]
-    public string ExtractDirectory { get; set; }
+    [Option('x', "expansionSettingsPath", Required = false)]
+    public string ExpansionSettingsPath { get; set; }
+
+    [Option('e', "diskDirectory", Required = false, HelpText = "Location where to read and write FDS files and where the JSON setting are.")]
+    public string DiskDirectory { get; set; }
 
 
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FDSBuilderC_Sharp;
+using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -18,16 +20,22 @@ public class FileHeader
 {
     private const byte FILEHEADER = 0x3;
 
+    [JsonProperty(Required = Required.Always)]
     public byte FileNumber { get; set; }
+    [JsonProperty(Required = Required.Always)]
     public byte FileID { get; set; }
+    [JsonProperty(Required = Required.Always)]
     public string FileName { get; set; }
+    [JsonConverter(typeof(HexStringToUshortJsonConverter)), JsonProperty(Required = Required.Always)]
     public ushort FileAddress { get; set; }
+    [JsonConverter(typeof(HexStringToUshortJsonConverter)), JsonProperty(Required = Required.Always)]
     public ushort FileSize { get; set; }
+    [JsonConverter(typeof(HexStringToByteJsonConverter)), JsonProperty(Required = Required.Always)]
     public byte FileType { get; set; }
+    [JsonConverter(typeof(HexStringToLongJsonConverter)), JsonProperty(Required = Required.Always)]
+    public long PCAddressStart { get; set; }
 
-    public int PCAddressStart;
-
-    public void ReadHeader(int StartAddress, out bool NotFileHeader)
+    public void ReadHeader(long StartAddress, out bool NotFileHeader)
     {
         byte[] FileHeaderStream = new byte[Constants.FILEHEADERSIZE];
         Array.Copy(Global.FDSDiskImage, StartAddress, FileHeaderStream, 0, FileHeaderStream.Length);
@@ -83,4 +91,24 @@ public class FileHeader
 
         return b;
     }
+}
+
+public sealed class HexStringToLongJsonConverter : JsonConverter
+{
+    public override bool CanConvert(Type objectType) => typeof(long).Equals(objectType);
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => writer.WriteValue(MyMath.DecToHex((long)value, Prefix.X));
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => (long)MyMath.HexToDec((string)reader.Value);
+}
+
+public sealed class HexStringToUshortJsonConverter : JsonConverter
+{
+    public override bool CanConvert(Type objectType) => typeof(ushort).Equals(objectType);
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => writer.WriteValue(MyMath.DecToHex((ushort)value, Prefix.X));
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => (ushort)MyMath.HexToDec((string)reader.Value);
+}
+public sealed class HexStringToByteJsonConverter : JsonConverter
+{
+    public override bool CanConvert(Type objectType) => typeof(byte).Equals(objectType);
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => writer.WriteValue(MyMath.DecToHex((byte)value, Prefix.X));
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => (byte)MyMath.HexToDec((string)reader.Value);
 }

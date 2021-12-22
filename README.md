@@ -92,7 +92,7 @@ cd "%projectFolder%"
 --inputDiskImage "%projectFolder%\%baseImage%" ^
 --outputDiskImage "%projectFolder%\%moddedImage%" ^
 --merge ^
---extractDirectory "%projectFolder%\disks\patched"
+--diskDirectory "%projectFolder%\disks\patched"
 ```
 
 ### Expand example
