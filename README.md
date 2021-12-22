@@ -103,15 +103,6 @@ cd "%projectFolder%"
 --expand "%projectFolder%\expansion.json"
 ```
 
-## Binary Info
-These are the bare essential files to make the program run. I don't know how or why "FDSBuilderC-Sharp.dll" is generated after compiling, but it would be best if there was a way to not generate it.
-
-* FDSBuilderC-Sharp.exe
-* FDSBuilderC-Sharp.dll
-* CommandLine.dll
-* Newtonsoft.Json.dll
-* FDSBuilderC-Sharp.runtimeconfig.json
-
 ## References
 * https://wiki.nesdev.com/w/index.php/FDS_disk_format
 * https://forums.nesdev.com/viewtopic.php?p=194867#p194867
